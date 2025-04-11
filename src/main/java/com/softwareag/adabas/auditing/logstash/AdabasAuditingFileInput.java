@@ -17,7 +17,6 @@ import java.nio.file.WatchService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -47,6 +46,7 @@ public class AdabasAuditingFileInput implements Input {
     public static final PluginConfigSpec<String> DIRECTORY_CONFIG = PluginConfigSpec.stringSetting("directory", "./data");
     public static final PluginConfigSpec<String> META_DIR_CONFIG = PluginConfigSpec.stringSetting("metaDir", "./meta");
     public static final PluginConfigSpec<String> REST_URL_CONFIG = PluginConfigSpec.stringSetting("restURL", "http://localhost:8080/metadata/JSON");
+    public static final PluginConfigSpec<String> TYPE_CONFIG = PluginConfigSpec.stringSetting("type", "adabas");
 
     private String id;
 
@@ -54,6 +54,7 @@ public class AdabasAuditingFileInput implements Input {
     private String directory;
     private String metaDir;
     private String restURL;
+    private String pluginType;
 
     // Metadata API
     private MetadataThread metadataApi;
@@ -70,6 +71,7 @@ public class AdabasAuditingFileInput implements Input {
         directory = config.get(DIRECTORY_CONFIG);
         metaDir = config.get(META_DIR_CONFIG);
         restURL = config.get(REST_URL_CONFIG);
+        pluginType = config.get(TYPE_CONFIG);
     }
 
     @Override
@@ -82,6 +84,7 @@ public class AdabasAuditingFileInput implements Input {
         logger.info("Directory ............ {}", directory);
         logger.info("Metadata Directory ... {}", metaDir);
         logger.info("REST URL ............. {}", restURL);
+        logger.info("Type ................. {}", pluginType);
 
         // check if metadata directory exists
         Path path = Paths.get(metaDir);
@@ -137,8 +140,7 @@ public class AdabasAuditingFileInput implements Input {
                         if (message != null) {
                             ArrayList<DataObject> parsedMessage = parser.parseBytesAsIndividualUABIs(message);
                             for (DataObject obj : parsedMessage) {
-                                consumer.accept(Collections.singletonMap("adabas-auditing",
-                                        convertToHashMap(obj)));
+                                consumer.accept(convertToHashMap(obj, pluginType));
                             }
                         }
                     }
@@ -166,7 +168,7 @@ public class AdabasAuditingFileInput implements Input {
     @Override
     public Collection<PluginConfigSpec<?>> configSchema() {
         // should return a list of all configuration options for this plugin
-        return Arrays.asList(DIRECTORY_CONFIG, META_DIR_CONFIG, REST_URL_CONFIG);
+        return Arrays.asList(DIRECTORY_CONFIG, META_DIR_CONFIG, REST_URL_CONFIG, TYPE_CONFIG);
     }
 
     @Override
@@ -179,8 +181,13 @@ public class AdabasAuditingFileInput implements Input {
     }
 
     private HashMap<String, Object> convertToHashMap(DataObject object) {
-        HashMap<String, Object> map = new HashMap<>();
-        // iterate over hashmap
+        return convertToHashMap(object, null);
+    }
+    private HashMap<String, Object> convertToHashMap(DataObject object, String pluginType) {
+        final HashMap<String, Object> map = new HashMap<>();
+        if (pluginType != null && !pluginType.isEmpty()) {
+            map.put("type", pluginType);
+        }
         for (Map.Entry<String, Object> entry : object.getList().entrySet()) {
             String key = entry.getKey();
             Object value = entry.getValue();
@@ -203,6 +210,7 @@ public class AdabasAuditingFileInput implements Input {
                 }
             }
         }
+        map.put("type", pluginType);
         return map;
     }
 }

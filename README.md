@@ -35,6 +35,7 @@ input {
   adabas_auditing_file_input { 
     directory => "/Users/ger/tmp/ala"
     metaDir => "/Users/ger/tmp/meta"
+    type => "adabas"
   }
 }
 output {
@@ -50,4 +51,5 @@ output {
 | directory     | Directory for the captured data | String | "./data"                              |
 | metaDir       | Directory for the metadata      | String | "./meta"                              |
 | restURL       | URL of metadata REST server     | String | "http://localhost:8080/metadata/JSON" |
+| type          | Data type                       | String | "adabas"                              |
 
