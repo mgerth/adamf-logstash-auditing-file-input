@@ -140,7 +140,9 @@ public class AdabasAuditingFileInput implements Input {
                         if (message != null) {
                             ArrayList<DataObject> parsedMessage = parser.parseBytesAsIndividualUABIs(message);
                             for (DataObject obj : parsedMessage) {
-                                consumer.accept(convertToHashMap(obj, pluginType));
+                                HashMap<String, Object> map = convertToHashMap(obj);
+                                map.put("type", pluginType);
+                                consumer.accept(map);
                             }
                         }
                     }
@@ -180,14 +182,8 @@ public class AdabasAuditingFileInput implements Input {
         return Files.readAllBytes(path);
     }
 
-    private HashMap<String, Object> convertToHashMap(DataObject object) {
-        return convertToHashMap(object, null);
-    }
-    private HashMap<String, Object> convertToHashMap(DataObject object, String pluginType) {
-        final HashMap<String, Object> map = new HashMap<>();
-        if (pluginType != null && !pluginType.isEmpty()) {
-            map.put("type", pluginType);
-        }
+   private HashMap<String, Object> convertToHashMap(DataObject object) {
+        HashMap<String, Object> map = new HashMap<>();
         for (Map.Entry<String, Object> entry : object.getList().entrySet()) {
             String key = entry.getKey();
             Object value = entry.getValue();
