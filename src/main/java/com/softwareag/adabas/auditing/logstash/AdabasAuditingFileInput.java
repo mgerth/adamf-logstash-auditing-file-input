@@ -21,8 +21,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -45,7 +43,6 @@ public class AdabasAuditingFileInput implements Input {
 
     public static final PluginConfigSpec<String> DIRECTORY_CONFIG = PluginConfigSpec.stringSetting("directory", "./data");
     public static final PluginConfigSpec<String> META_DIR_CONFIG = PluginConfigSpec.stringSetting("metaDir", "./meta");
-    public static final PluginConfigSpec<String> REST_URL_CONFIG = PluginConfigSpec.stringSetting("restURL", "http://localhost:8080/metadata/JSON");
     public static final PluginConfigSpec<String> TYPE_CONFIG = PluginConfigSpec.stringSetting("type", "adabas");
 
     private String id;
@@ -53,13 +50,9 @@ public class AdabasAuditingFileInput implements Input {
     // input plugin parameters
     private String directory;
     private String metaDir;
-    private String restURL;
     private String pluginType;
 
-    // Metadata API
-    private MetadataThread metadataApi;
-
-    private final CountDownLatch done = new CountDownLatch(1);
+      private final CountDownLatch done = new CountDownLatch(1);
     private volatile boolean stopped;
 
     // all plugins must provide a constructor that accepts id, Configuration, and
@@ -70,20 +63,14 @@ public class AdabasAuditingFileInput implements Input {
 
         directory = config.get(DIRECTORY_CONFIG);
         metaDir = config.get(META_DIR_CONFIG);
-        restURL = config.get(REST_URL_CONFIG);
         pluginType = config.get(TYPE_CONFIG);
     }
 
     @Override
     public void start(Consumer<Map<String, Object>> consumer) {
-        if (restURL.equals("")) {
-            restURL = "http://localhost:8080/metadata/JSON";
-        }
-
         logger.info("Starting Adabas Auditing file input plugin");
         logger.info("Directory ............ {}", directory);
         logger.info("Metadata Directory ... {}", metaDir);
-        logger.info("REST URL ............. {}", restURL);
         logger.info("Type ................. {}", pluginType);
 
         // check if metadata directory exists
@@ -95,21 +82,6 @@ public class AdabasAuditingFileInput implements Input {
                 e.printStackTrace();
             }
         }
-        // set environment variable for metadata directory
-        System.setProperty("REST_PATH", metaDir);
-
-        // starts local REST API
-        if (restURL.contains("localhost")) { 
-            String regexPort = ":[0-9]+";
-            Pattern pattern = Pattern.compile(regexPort);
-            Matcher matcher = pattern.matcher(restURL);
-            matcher.find();
-            String url = matcher.group().split(":")[1];
-            int port = Integer.valueOf(url);
-            metadataApi = new MetadataThread(port);
-            metadataApi.run();
-        }
-
         // The start method should push Map<String, Object> instances to the supplied
         // QueueWriter
         // instance. Those will be converted to Event instances later in the Logstash
@@ -126,7 +98,7 @@ public class AdabasAuditingFileInput implements Input {
 
         // instantiate ALA parser
         ALAParse parser = ALAParse.getInstance();
-        parser.setRestURL(restURL);
+        parser.setMetaDataDirectory(metaDir);
         try {
             WatchService watchService = FileSystems.getDefault().newWatchService();
             path = Paths.get(directory);
@@ -170,7 +142,7 @@ public class AdabasAuditingFileInput implements Input {
     @Override
     public Collection<PluginConfigSpec<?>> configSchema() {
         // should return a list of all configuration options for this plugin
-        return Arrays.asList(DIRECTORY_CONFIG, META_DIR_CONFIG, REST_URL_CONFIG, TYPE_CONFIG);
+        return Arrays.asList(DIRECTORY_CONFIG, META_DIR_CONFIG, TYPE_CONFIG);
     }
 
     @Override
