@@ -1,0 +1,200 @@
+{
+    "adabas-auditing" => {
+        "UABI_ITEMS" => {
+               "UABINUCI" => 0,
+            "messageType" => "CMD",
+                 "UABITY" => "CMD",
+               "UABIDCNT" => 4,
+             "UABD_ITEMS" => [
+                [0] {
+                        "UABDISNG" => 0,
+                    "PAYLOAD_DATA" => {
+                        "PERSONNEL_ID" => "11400328",
+                                "CITY" => "Darmstadt",
+                             "MARSTAT" => "M",
+                            "AREACODE" => "06151",
+                          "FIRST_NAME" => "Anna",
+                                "DEPT" => "FINA24",
+                           "LEAVE_DUE" => 21,
+                            "JOBTITLE" => "Sachbearbeiterin",
+                        "LEAVE_BOOKED" => [
+                            [0] {
+                                  "LEAVE_END" => 19980810,
+                                "LEAVE_START" => 19980802
+                            },
+                            [1] {
+                                  "LEAVE_END" => 0,
+                                "LEAVE_START" => 0
+                            },
+                            [2] {
+                                  "LEAVE_END" => 0,
+                                "LEAVE_START" => 0
+                            },
+                            [3] {
+                                  "LEAVE_END" => 0,
+                                "LEAVE_START" => 0
+                            },
+                            [4] {
+                                  "LEAVE_END" => 0,
+                                "LEAVE_START" => 0
+                            }
+                        ],
+                                "NAME" => "Schilling",
+                         "MIDDLE_NAME" => "Hedwig",
+                               "PHONE" => "13426",
+                                "LANG" => [
+                            [0] "GER"
+                        ],
+                             "COUNTRY" => "D",
+                         "LEAVE_TAKEN" => 7,
+                              "INCOME" => [
+                            [0] {
+                                "CURRCODE" => "DM",
+                                  "SALARY" => 38000,
+                                   "BONUS" => [
+                                    [0] 0,
+                                    [1] 0,
+                                    [2] 0,
+                                    [3] 0,
+                                    [4] 0
+                                ]
+                            },
+                            [1] {
+                                "CURRCODE" => "DM",
+                                  "SALARY" => 0,
+                                   "BONUS" => [
+                                    [0] 0,
+                                    [1] 0,
+                                    [2] 0,
+                                    [3] 0,
+                                    [4] 0
+                                ]
+                            },
+                            [2] {
+                                "CURRCODE" => "",
+                                  "SALARY" => 0,
+                                   "BONUS" => [
+                                    [0] 0,
+                                    [1] 0,
+                                    [2] 0,
+                                    [3] 0,
+                                    [4] 0
+                                ]
+                            },
+                            [3] {
+                                "CURRCODE" => "",
+                                  "SALARY" => 0,
+                                   "BONUS" => [
+                                    [0] 0,
+                                    [1] 0,
+                                    [2] 0,
+                                    [3] 0,
+                                    [4] 0
+                                ]
+                            },
+                            [4] {
+                                "CURRCODE" => "",
+                                  "SALARY" => 0,
+                                   "BONUS" => [
+                                    [0] 0,
+                                    [1] 0,
+                                    [2] 0,
+                                    [3] 0,
+                                    [4] 0
+                                ]
+                            }
+                        ],
+                        "ADDRESS_LINE" => [
+                            [0] "Kastanienal.12",
+                            [1] "6100 Darmstadt"
+                        ],
+                                 "SEX" => "F",
+                            "POSTCODE" => "6100"
+                    },
+                         "UABDISN" => 203,
+                          "UABDTY" => "DATA",
+                        "UABDSUBC" => "",
+                        "UABDRETS" => 2023-11-14T12:08:39.863Z,
+                         "UABDRSP" => 0
+                },
+                [1] {
+                    "PAYLOAD_FBUF" => {
+                        "FORMATBUFFER" => "AA,8,A,AC,20,A,AE,20,A,AJ,20,A."
+                    },
+                        "UABDISNG" => 0,
+                         "UABDISN" => 0,
+                          "UABDTY" => "FBUF",
+                        "UABDSUBC" => "",
+                        "UABDRETS" => 2020-10-01T16:59:24.839Z,
+                         "UABDRSP" => 0
+                },
+                [2] {
+                        "UABDISNG" => 0,
+                    "PAYLOAD_ACBX" => {
+                            "ADDITIONS1" => "C1D1404040404040",
+                                   "ISQ" => 0,
+                             "USERFIELD" => "00000000000000000000000000000000",
+                                   "FNR" => 1,
+                                 "CMDID" => "28500101",
+                                  "DBID" => 0,
+                            "RSPSUBCODE" => 0,
+                        "RSPSUBCODECHAR" => "",
+                               "RSPCODE" => 0,
+                               "CMDCODE" => "L1",
+                                   "ISN" => 203
+                    },
+                         "UABDISN" => 0,
+                          "UABDTY" => "ACBX",
+                        "UABDSUBC" => "",
+                        "UABDRETS" => 2023-11-13T11:58:04.861Z,
+                         "UABDRSP" => 0
+                },
+                [3] {
+                        "UABDISNG" => 0,
+                         "UABDISN" => 0,
+                          "UABDTY" => "CLNT",
+                        "UABDSUBC" => "",
+                        "UABDRETS" => 2021-07-27T14:54:05.440Z,
+                    "PAYLOAD_CLNT" => {
+                             "LPARNAME" => "DA3F",
+                             "TPUSERID" => "GER",
+                             "USERTYPE" => "COMPLETE",
+                              "NATAPPL" => "GER",
+                               "NATLIB" => "GER",
+                             "ACCTINFO" => "ACCOUNT 2005",
+                              "CALLPGM" => "NAT92",
+                               "SECUID" => "GER",
+                        "COM-PLETE-TID" => 7,
+                                "JOBID" => "S0203745",
+                              "NATPROG" => "EMPLAPP",
+                              "NATSTMT" => "2850",
+                               "NATUID" => "GER"
+                    },
+                         "UABDRSP" => 0
+                }
+            ],
+               "UABIDBID" => 22131,
+               "UABIITIM" => 2025-03-11T10:40:07.630Z,
+               "UABISNAM" => "EMPL",
+               "UABIPTIM" => 2025-03-11T10:40:12.876Z,
+                  "UAICM" => {
+                "UAICMGID" => "00049E0839320001404040404040404000FBB880C7C5D940404040F1",
+                "UAICMSID" => "GER",
+                "UAICMAUD" => "DE00AC140A6D2607",
+                "UAICMFNR" => 1,
+                "UAICMCMD" => "L1",
+                "UAICMISG" => 0,
+                "UAICMISN" => 203
+            }
+        },
+              "type" => "adabas",
+          "UABHNUCI" => 0,
+          "UABHASID" => 22134,
+          "UABHTIME" => 2025-03-11T10:40:12.876Z,
+          "UABHNAME" => "ANSERVER"
+    },
+         "@timestamp" => 2025-04-27T06:43:27.360850Z,
+               "type" => "adabas-auditing",
+        "GuardRecord" => "{\"sessionId\":\"28500101\",\"dbName\":\"22131\",\"appUserName\":\"GER\",\"time\":{\"timstamp\":1741689612876,\"minOffsetFromGMT\":0,\"minDst\":0},\"sessionLocator\":null,\"accessor\":{\"dbUser\":\"GER\",\"serverType\":\"Adabas\",\"serverOs\":\"\",\"clientOs\":\"\",\"clientHostName\":\"\",\"serverHostName\":\"DA3F\",\"commProtocol\":\"\",\"dbProtocol\":\"Adabas native audit\",\"dbProtocolVersion\":\"\",\"osUser\":\"\",\"sourceProgram\":\"EMPLAPP\",\"client_mac\":\"\",\"serverDescription\":\"\",\"serviceName\":\"\",\"language\":\"FREE_TEXT\",\"dataType\":\"CONSTRUCT\"},\"data\":{\"construct\":{\"sentences\":[{\"verb\":\"L1\",\"objects\":[],\"descendants\":[],\"fields\":[\"AA\",\"AC\",\"AE\",\"AJ\"]}],\"fullSql\":null,\"redactedSensitiveDataSql\":null},\"originalSqlCommand\":null},\"exception\":null}",
+           "@version" => "1"
+}

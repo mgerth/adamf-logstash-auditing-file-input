@@ -17,6 +17,7 @@ import java.nio.file.WatchService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -41,7 +42,8 @@ public class AdabasAuditingFileInput implements Input {
     // log4j2 logger
     private static final Logger logger = LogManager.getLogger(AdabasAuditingFileInput.class);
 
-    public static final PluginConfigSpec<String> DIRECTORY_CONFIG = PluginConfigSpec.stringSetting("directory", "./data");
+    public static final PluginConfigSpec<String> DIRECTORY_CONFIG = PluginConfigSpec.stringSetting("directory",
+            "./data");
     public static final PluginConfigSpec<String> META_DIR_CONFIG = PluginConfigSpec.stringSetting("metaDir", "./meta");
     public static final PluginConfigSpec<String> TYPE_CONFIG = PluginConfigSpec.stringSetting("type", "adabas");
 
@@ -52,7 +54,7 @@ public class AdabasAuditingFileInput implements Input {
     private String metaDir;
     private String pluginType;
 
-      private final CountDownLatch done = new CountDownLatch(1);
+    private final CountDownLatch done = new CountDownLatch(1);
     private volatile boolean stopped;
 
     // all plugins must provide a constructor that accepts id, Configuration, and
@@ -68,7 +70,7 @@ public class AdabasAuditingFileInput implements Input {
 
     @Override
     public void start(Consumer<Map<String, Object>> consumer) {
-        logger.info("Starting Adabas Auditing file input plugin");
+        logger.info("Starting Adabas Auditing file input plugin (0.0.4)");
         logger.info("Directory ............ {}", directory);
         logger.info("Metadata Directory ... {}", metaDir);
         logger.info("Type ................. {}", pluginType);
@@ -105,16 +107,17 @@ public class AdabasAuditingFileInput implements Input {
             path.register(watchService, ENTRY_CREATE, ENTRY_MODIFY);
             while (!stopped) {
                 boolean poll = true;
-                while (poll) {
+                while (poll && !stopped) {
                     WatchKey key = watchService.take();
                     for (WatchEvent<?> event : key.pollEvents()) {
+                        logger.debug("File: {}", event.context());
                         byte[] message = fileToByteArray(path.resolve((Path) event.context()));
                         if (message != null) {
                             ArrayList<DataObject> parsedMessage = parser.parseBytesAsIndividualUABIs(message);
                             for (DataObject obj : parsedMessage) {
                                 HashMap<String, Object> map = convertToHashMap(obj);
                                 map.put("type", pluginType);
-                                consumer.accept(map);
+                                consumer.accept(Collections.singletonMap("adabas-auditing", map));
                             }
                         }
                     }
@@ -154,7 +157,7 @@ public class AdabasAuditingFileInput implements Input {
         return Files.readAllBytes(path);
     }
 
-   private HashMap<String, Object> convertToHashMap(DataObject object) {
+    private HashMap<String, Object> convertToHashMap(DataObject object) {
         HashMap<String, Object> map = new HashMap<>();
         for (Map.Entry<String, Object> entry : object.getList().entrySet()) {
             String key = entry.getKey();
@@ -178,7 +181,6 @@ public class AdabasAuditingFileInput implements Input {
                 }
             }
         }
-        map.put("type", pluginType);
         return map;
     }
 }

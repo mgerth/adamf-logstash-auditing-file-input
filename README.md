@@ -8,8 +8,8 @@ When the plugin is started, it also starts a REST server for the schemata when t
 ## Build
 The build of this plugin requires the access to an installation of Logstash.
 
-1. Download Logstash from https://www.elastic.co/downloads/logstash
-2. Copy the files **rubyUtils.gradle** and **versions.yml** from Github repository https://www.elastic.co/downloads/logstash to directory where you installed Logstash
+1. Clone the [Logstash](https://github.com/elastic/logstash) repository
+2. Assemble Logstash with the command `./gradlew assemble`
 3. Clone this repository
 4. Set the property variable **LOGSTASH_CORE_PATH**. This could be done in gradle.properties file
 5. Assemble plugin with the command `./gradlew assemble gem`
@@ -21,7 +21,7 @@ See also [How to write a Java input plugin](https://www.elastic.co/guide/en/logs
 ## Install Plugin
 To install the plugin use the command 
 ```
-logstash install --no-verify --local <full-path>/logstash-input-adabas_auditing_file_input-<version>-java.gem
+logstash install --no-verify --local <full-path>/logstash-input-adabas_auditing_file_input-x.x.x-java.gem
 ```
 
 ## Run Logstash
@@ -35,7 +35,6 @@ input {
   adabas_auditing_file_input { 
     directory => "/Users/ger/tmp/ala"
     metaDir => "/Users/ger/tmp/meta"
-    type => "adabas"
   }
 }
 output {
