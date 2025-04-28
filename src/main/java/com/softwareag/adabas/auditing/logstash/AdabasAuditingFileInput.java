@@ -17,7 +17,6 @@ import java.nio.file.WatchService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -70,62 +69,70 @@ public class AdabasAuditingFileInput implements Input {
 
     @Override
     public void start(Consumer<Map<String, Object>> consumer) {
-        logger.info("Starting Adabas Auditing file input plugin (0.0.4)");
-        logger.info("Directory ............ {}", directory);
-        logger.info("Metadata Directory ... {}", metaDir);
-        logger.info("Type ................. {}", pluginType);
+        logger.debug("Starting Adabas Auditing file input plugin");
+        logger.debug("(Adabas)Directory ............ {}", directory);
+        logger.debug("(Adabas)Metadata Directory ... {}", metaDir);
+        logger.debug("(Adabas)Type ................. {}", pluginType);
 
-        // check if metadata directory exists
+        // Check if metadata directory exists
         Path path = Paths.get(metaDir);
         if (!Files.exists(path)) {
             try {
                 Files.createDirectories(path);
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error("Failed to create metadata directory", e);
+                return;
             }
         }
-        // The start method should push Map<String, Object> instances to the supplied
-        // QueueWriter
-        // instance. Those will be converted to Event instances later in the Logstash
-        // event
-        // processing pipeline.
-        //
-        // Inputs that operate on unbounded streams of data or that poll indefinitely
-        // for new
-        // events should loop indefinitely until they receive a stop request. Inputs
-        // that produce
-        // a finite sequence of events should loop until that sequence is exhausted or
-        // until they
-        // receive a stop request, whichever comes first.
 
-        // instantiate ALA parser
+        // Instantiate ALA parser
         ALAParse parser = ALAParse.getInstance();
         parser.setMetaDataDirectory(metaDir);
-        try {
-            WatchService watchService = FileSystems.getDefault().newWatchService();
+
+        try (WatchService watchService = FileSystems.getDefault().newWatchService()) {
             path = Paths.get(directory);
             path.register(watchService, ENTRY_CREATE, ENTRY_MODIFY);
+
             while (!stopped) {
-                boolean poll = true;
-                while (poll && !stopped) {
-                    WatchKey key = watchService.take();
-                    for (WatchEvent<?> event : key.pollEvents()) {
-                        logger.debug("File: {}", event.context());
-                        byte[] message = fileToByteArray(path.resolve((Path) event.context()));
+                WatchKey key = watchService.poll(); // Non-blocking poll
+                if (key == null) {
+                    Thread.sleep(100); // Avoid busy-waiting
+                    continue;
+                }
+
+                for (WatchEvent<?> event : key.pollEvents()) {
+                    logger.debug("Event kind: {}", event.kind());
+                    logger.debug("Event context: {}", event.context());
+
+                    try {
+                        Path eventPath = path.resolve((Path) event.context());
+                        byte[] message = fileToByteArray(eventPath);
                         if (message != null) {
+                            logger.debug("Processing message: {}", message);
                             ArrayList<DataObject> parsedMessage = parser.parseBytesAsIndividualUABIs(message);
                             for (DataObject obj : parsedMessage) {
                                 HashMap<String, Object> map = convertToHashMap(obj);
                                 map.put("type", pluginType);
-                                consumer.accept(Collections.singletonMap("adabas-auditing", map));
+                                logger.error("**********Map: {}************", map);
+                                HashMap<String, Object> result = new HashMap<>();
+                                result.put("adabas_auditing", map);
+                                consumer.accept(result);
                             }
                         }
+                    } catch (java.nio.file.AccessDeniedException e) {
+                        logger.error("Access denied to file: {}.", event.context(), e);
+                    } catch (Exception e) {
+                        logger.error("Error processing file event", e);
                     }
-                    poll = key.reset();
+                }
+
+                if (!key.reset()) {
+                    logger.warn("WatchKey could not be reset. Exiting watch loop.");
+                    break;
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error in Adabas Auditing file input plugin", e);
         } finally {
             stopped = true;
             done.countDown();
@@ -181,6 +188,7 @@ public class AdabasAuditingFileInput implements Input {
                 }
             }
         }
+        map.put("type", pluginType);
         return map;
     }
 }
