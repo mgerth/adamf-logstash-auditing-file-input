@@ -17,6 +17,7 @@ import java.nio.file.WatchService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -44,7 +45,8 @@ public class AdabasAuditingFileInput implements Input {
     public static final PluginConfigSpec<String> DIRECTORY_CONFIG = PluginConfigSpec.stringSetting("directory",
             "./data");
     public static final PluginConfigSpec<String> META_DIR_CONFIG = PluginConfigSpec.stringSetting("metaDir", "./meta");
-    public static final PluginConfigSpec<String> TYPE_CONFIG = PluginConfigSpec.stringSetting("type", "adabas");
+    public static final PluginConfigSpec<String> TYPE_CONFIG = PluginConfigSpec.stringSetting("type",
+            "adabas-auditing");
 
     private String id;
 
@@ -105,18 +107,12 @@ public class AdabasAuditingFileInput implements Input {
                     logger.debug("Event context: {}", event.context());
 
                     try {
-                        Path eventPath = path.resolve((Path) event.context());
-                        byte[] message = fileToByteArray(eventPath);
+                        byte[] message = fileToByteArray(path.resolve((Path) event.context()));
                         if (message != null) {
-                            logger.debug("Processing message: {}", message);
                             ArrayList<DataObject> parsedMessage = parser.parseBytesAsIndividualUABIs(message);
                             for (DataObject obj : parsedMessage) {
                                 HashMap<String, Object> map = convertToHashMap(obj);
-                                map.put("type", pluginType);
-                                logger.error("**********Map: {}************", map);
-                                HashMap<String, Object> result = new HashMap<>();
-                                result.put("adabas_auditing", map);
-                                consumer.accept(result);
+                                consumer.accept(new HashMap<>(Collections.singletonMap("adabas-auditing", map)));
                             }
                         }
                     } catch (java.nio.file.AccessDeniedException e) {
@@ -188,7 +184,6 @@ public class AdabasAuditingFileInput implements Input {
                 }
             }
         }
-        map.put("type", pluginType);
         return map;
     }
 }
