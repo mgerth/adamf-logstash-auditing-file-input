@@ -72,26 +72,41 @@ public class AdabasAuditingFileInput implements Input {
     @Override
     public void start(Consumer<Map<String, Object>> consumer) {
         logger.debug("Starting Adabas Auditing file input plugin");
-        logger.debug("(Adabas)Directory ............ {}", directory);
-        logger.debug("(Adabas)Metadata Directory ... {}", metaDir);
-        logger.debug("(Adabas)Type ................. {}", pluginType);
+        logger.debug("Directory ............ {}", directory);
+        logger.debug("Metadata Directory ... {}", metaDir);
+        logger.debug("Type ................. {}", pluginType);
 
-        // Check if metadata directory exists
+        // check if metadata directory exists
         Path path = Paths.get(metaDir);
         if (!Files.exists(path)) {
             try {
                 Files.createDirectories(path);
             } catch (IOException e) {
-                logger.error("Failed to create metadata directory", e);
+                e.printStackTrace();
                 return;
             }
         }
 
-        // Instantiate ALA parser
+        // The start method should push Map<String, Object> instances to the supplied
+        // QueueWriter
+        // instance. Those will be converted to Event instances later in the Logstash
+        // event
+        // processing pipeline.
+        //
+        // Inputs that operate on unbounded streams of data or that poll indefinitely
+        // for new
+        // events should loop indefinitely until they receive a stop request. Inputs
+        // that produce
+        // a finite sequence of events should loop until that sequence is exhausted or
+        // until they
+        // receive a stop request, whichever comes first.
+
+        // instantiate ALA parser
         ALAParse parser = ALAParse.getInstance();
         parser.setMetaDataDirectory(metaDir);
 
-        try (WatchService watchService = FileSystems.getDefault().newWatchService()) {
+        try {
+            WatchService watchService = FileSystems.getDefault().newWatchService();
             path = Paths.get(directory);
             path.register(watchService, ENTRY_CREATE, ENTRY_MODIFY);
 
@@ -128,7 +143,7 @@ public class AdabasAuditingFileInput implements Input {
                 }
             }
         } catch (Exception e) {
-            logger.error("Error in Adabas Auditing file input plugin", e);
+            e.printStackTrace();
         } finally {
             stopped = true;
             done.countDown();
