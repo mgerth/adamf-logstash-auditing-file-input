@@ -71,10 +71,10 @@ public class AdabasAuditingFileInput implements Input {
 
     @Override
     public void start(Consumer<Map<String, Object>> consumer) {
-        logger.debug("Starting Adabas Auditing file input plugin");
-        logger.debug("Directory ............ {}", directory);
-        logger.debug("Metadata Directory ... {}", metaDir);
-        logger.debug("Type ................. {}", pluginType);
+        logger.info("Starting Adabas Auditing file input plugin (0.0.4)");
+        logger.info("Directory ............ {}", directory);
+        logger.info("Metadata Directory ... {}", metaDir);
+        logger.info("Type ................. {}", pluginType);
 
         // check if metadata directory exists
         Path path = Paths.get(metaDir);
@@ -86,7 +86,6 @@ public class AdabasAuditingFileInput implements Input {
                 return;
             }
         }
-
         // The start method should push Map<String, Object> instances to the supplied
         // QueueWriter
         // instance. Those will be converted to Event instances later in the Logstash
@@ -104,12 +103,10 @@ public class AdabasAuditingFileInput implements Input {
         // instantiate ALA parser
         ALAParse parser = ALAParse.getInstance();
         parser.setMetaDataDirectory(metaDir);
-
         try {
             WatchService watchService = FileSystems.getDefault().newWatchService();
             path = Paths.get(directory);
             path.register(watchService, ENTRY_CREATE, ENTRY_MODIFY);
-
             while (!stopped) {
                 WatchKey key = watchService.poll(); // Non-blocking poll
                 if (key == null) {
@@ -136,7 +133,6 @@ public class AdabasAuditingFileInput implements Input {
                         logger.error("Error processing file event", e);
                     }
                 }
-
                 if (!key.reset()) {
                     logger.warn("WatchKey could not be reset. Exiting watch loop.");
                     break;
