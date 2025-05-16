@@ -45,7 +45,8 @@ public class AdabasAuditingFileInput implements Input {
     public static final PluginConfigSpec<String> DIRECTORY_CONFIG = PluginConfigSpec.stringSetting("directory",
             "./data");
     public static final PluginConfigSpec<String> META_DIR_CONFIG = PluginConfigSpec.stringSetting("metaDir", "./meta");
-    public static final PluginConfigSpec<String> TYPE_CONFIG = PluginConfigSpec.stringSetting("type", "adabas");
+    public static final PluginConfigSpec<String> TYPE_CONFIG = PluginConfigSpec.stringSetting("type",
+            "adabas-auditing");
 
     private String id;
 
@@ -82,6 +83,7 @@ public class AdabasAuditingFileInput implements Input {
                 Files.createDirectories(path);
             } catch (IOException e) {
                 e.printStackTrace();
+                return;
             }
         }
         // The start method should push Map<String, Object> instances to the supplied
@@ -106,22 +108,34 @@ public class AdabasAuditingFileInput implements Input {
             path = Paths.get(directory);
             path.register(watchService, ENTRY_CREATE, ENTRY_MODIFY);
             while (!stopped) {
-                boolean poll = true;
-                while (poll && !stopped) {
-                    WatchKey key = watchService.take();
-                    for (WatchEvent<?> event : key.pollEvents()) {
-                        logger.debug("File: {}", event.context());
+                WatchKey key = watchService.poll(); // Non-blocking poll
+                if (key == null) {
+                    Thread.sleep(100); // Avoid busy-waiting
+                    continue;
+                }
+
+                for (WatchEvent<?> event : key.pollEvents()) {
+                    logger.debug("Event kind: {}", event.kind());
+                    logger.debug("Event context: {}", event.context());
+
+                    try {
                         byte[] message = fileToByteArray(path.resolve((Path) event.context()));
                         if (message != null) {
                             ArrayList<DataObject> parsedMessage = parser.parseBytesAsIndividualUABIs(message);
                             for (DataObject obj : parsedMessage) {
                                 HashMap<String, Object> map = convertToHashMap(obj);
-                                map.put("type", pluginType);
-                                consumer.accept(Collections.singletonMap("adabas-auditing", map));
+                                consumer.accept(new HashMap<>(Collections.singletonMap("adabas-auditing", map)));
                             }
                         }
+                    } catch (java.nio.file.AccessDeniedException e) {
+                        logger.error("Access denied to file: {}.", event.context(), e);
+                    } catch (Exception e) {
+                        logger.error("Error processing file event", e);
                     }
-                    poll = key.reset();
+                }
+                if (!key.reset()) {
+                    logger.warn("WatchKey could not be reset. Exiting watch loop.");
+                    break;
                 }
             }
         } catch (Exception e) {
